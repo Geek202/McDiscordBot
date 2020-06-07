@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+}
+
+group 'me.geek.tom'
+version '1.0-SNAPSHOT'
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+repositories {
+    mavenCentral()
+    maven { url "https://libraries.minecraft.net" }
+    jcenter()
+    maven { url 'https://jitpack.io' }
+    maven { url 'https://files.minecraftforge.net/maven' }
+}
+
+dependencies {
+    shade('net.dv8tion:JDA:4.1.1_154') {
+        exclude module: 'opus-java'
+    }
+
+    shade 'com.mojang:brigadier:1.0.17'
+
+    shade 'net.minecraftforge:forgeflower:1.5.380.44'
+    shade 'com.github.Geek202:ReFind:master-SNAPSHOT'
+
+    shade 'com.electronwill.night-config:core:3.6.3'
+    shade 'com.electronwill.night-config:toml:3.6.3'
+
+    shade 'com.jagrosh:jda-utilities:3.0.3'
+
+    shade 'org.ow2.asm:asm:8.0'
+    shade 'org.ow2.asm:asm-commons:8.0'
+    shade 'org.ow2.asm:asm-analysis:8.0'
+}
+
+jar {
+    manifest {
+        attributes([
+                "Specification-Title": "DiscordBots",
+                "Specification-Vendor": "Tom_The_Geek",
+                "Specification-Version": "1", // We are version 1 of ourselves
+                "Implementation-Title": project.name,
+                "Implementation-Version": "${version}",
+                "Implementation-Vendor" :"Tom_The_Geek",
+                "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
+                "Main-Class": "me.geek.tom.discord.DiscordBot"
+        ])
+    }
+
+    configurations.shade.each { dep ->
+        from(project.zipTree(dep)){
+            exclude 'META-INF', 'META-INF/**'
+        }
+    }
+}

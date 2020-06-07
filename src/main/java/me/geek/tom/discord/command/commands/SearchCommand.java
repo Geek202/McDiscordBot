@@ -16,8 +16,6 @@ import net.dv8tion.jda.api.exceptions.PermissionException;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -99,10 +97,8 @@ public class SearchCommand implements ICommand {
                 literal("forge_ver")
                     .executes(ctx -> {
                         User user = ctx.getSource().getAuthor();
-                        sendResults(
-                                createTopResultEmbed(Collections.singletonList(FORGE_VERSION), DiscordBot.user(user), "Forge Version", "Forge Version"),
-                                Collections.singletonList(FORGE_VERSION), user, ctx.getSource().getMessage().getChannel()
-                        );
+                        ctx.getSource().getMessage().getChannel().sendMessage(
+                                forgeVerEmbed(FORGE_VERSION, DiscordBot.user(user), "Forge Version")).queue();
 
                         return 0;
                     }
@@ -119,6 +115,18 @@ public class SearchCommand implements ICommand {
                 .addField("Term:", "```"+term+"```", true)
                 .addField("Type:", "```"+type+"```", true)
                 .addField("Result count:", "```"+results.size()+"```", false);
+
+        return builder.build();
+    }
+
+    private MessageEmbed forgeVerEmbed(String version, String user, String type) {
+        EmbedBuilder builder = new EmbedBuilder();
+        DiscordBot.makeBotEmbed(builder); // Configure title and footer.
+
+        builder .setTitle("Search results")
+                .addField("Requested by:", "```"+user+"```", true)
+                .addField("Type:", "```"+type+"```", true)
+                .addField("Result:", "```"+version+"```", false);
 
         return builder.build();
     }

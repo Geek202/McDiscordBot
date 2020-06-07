@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -26,15 +28,17 @@ public class DiscordBot extends ListenerAdapter {
 
     private static final File CONFIG_FILE = new File("./config.toml");
 
+    public static Logger LOGGER = LogManager.getLogger();
+
     private final CommandParser parser = new CommandParser();
     public static final EventWaiter waiter = new EventWaiter();
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Starting bot...");
+        LOGGER.info(Logging.LAUNCH, "Starting bot...");
 
         Config.ConfigData data = Config.loadConfig(CONFIG_FILE);
         if (!data.isConfigured()) {
-            System.out.println("Please modify " + CONFIG_FILE.getPath() + " to configure all the things.");
+            LOGGER.error(Logging.LAUNCH, "Please modify " + CONFIG_FILE.getPath() + " to configure all the things.");
             return;
         }
 
@@ -52,7 +56,7 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-        System.out.println("Bot ready on " + event.getGuildTotalCount() + " guilds!");
+        LOGGER.info(Logging.BOT, "Bot ready on " + event.getGuildTotalCount() + " guilds!");
     }
 
     @Override
@@ -60,11 +64,10 @@ public class DiscordBot extends ListenerAdapter {
         if (!ROBOTS_ALLOWED && event.getAuthor().isBot()) return;
         String msg = event.getMessage().getContentStripped();
         if (msg.startsWith("|")) {
-            System.out.println("Got message from " + user(event.getAuthor()) + " with content: " + event.getMessage().getContentRaw() + " AND ITS A COMMAND!");
+            LOGGER.info(Logging.COMMAND, "Got message from " + user(event.getAuthor()) + " with content: " + event.getMessage().getContentRaw() + " AND ITS A COMMAND!");
             try {
                 parser.handle(event.getMessage());
             } catch (CommandSyntaxException e) {
-                System.out.println("Sending error lol");
                 event.getChannel().sendMessage(ErrorHandler.createCommandSyntaxEmbed(e, event.getAuthor())).queue();
             } catch (Exception e) {
                 event.getChannel().sendMessage(ErrorHandler.createErrorEmbed(e, event.getAuthor(), event.getMessage().getContentDisplay())).queue();

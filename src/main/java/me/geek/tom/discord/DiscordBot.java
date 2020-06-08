@@ -5,10 +5,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.geek.tom.discord.command.CommandParser;
 import me.geek.tom.discord.config.Config;
 import me.geek.tom.discord.error.ErrorHandler;
+import me.geek.tom.discord.startup.MappingsDownloader;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -22,9 +24,7 @@ import java.time.Instant;
 
 public class DiscordBot extends ListenerAdapter {
 
-    public static String BOT_MASTER;
-    public static String FORGE_VERSION;
-    public static boolean ROBOTS_ALLOWED;
+    public static Config.ConfigData CONFIG;
 
     private static final File CONFIG_FILE = new File("./config.toml");
 
@@ -32,26 +32,38 @@ public class DiscordBot extends ListenerAdapter {
 
     private final CommandParser parser = new CommandParser();
     public static final EventWaiter waiter = new EventWaiter();
+    public static MappingsDownloader.MappingsData MAPPINGS;
 
     public static void main(String[] args) throws Exception {
         LOGGER.info(Logging.LAUNCH, "Starting bot...");
 
-        Config.ConfigData data = Config.loadConfig(CONFIG_FILE);
-        if (!data.isConfigured()) {
+        CONFIG = Config.loadConfig(CONFIG_FILE);
+        if (!CONFIG.isConfigured()) {
             LOGGER.error(Logging.LAUNCH, "Please modify " + CONFIG_FILE.getPath() + " to configure all the things.");
             return;
         }
 
-        BOT_MASTER = data.getBotMaster();
-        FORGE_VERSION = data.getForgeVersion();
-        ROBOTS_ALLOWED = data.botListenToRobots();
-        JDABuilder builder = JDABuilder.createDefault(data.getBotToken());
-        builder.setActivity(Activity.playing("with "+FORGE_VERSION));
+        MAPPINGS = MappingsDownloader.setupMcp();
+
+        JDABuilder builder = JDABuilder.createDefault(CONFIG.getBotToken());
+        builder.setActivity(Activity.playing("with "+CONFIG.getForgeVersion()));
 
         DiscordBot bot = new DiscordBot();
         builder.addEventListeners(bot, waiter);
         JDA jda = builder.build();
         jda.awaitReady();
+    }
+
+    public static MessageEmbed versionEmbed(String version, String user, String type) {
+        EmbedBuilder builder = new EmbedBuilder();
+        makeBotEmbed(builder); // Configure title and footer.
+
+        builder .setTitle("Search results")
+                .addField("Requested by:", "```"+user+"```", true)
+                .addField("Type:", "```"+type+"```", true)
+                .addField("Result:", "```"+version+"```", false);
+
+        return builder.build();
     }
 
     @Override
@@ -61,7 +73,7 @@ public class DiscordBot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
-        if (!ROBOTS_ALLOWED && event.getAuthor().isBot()) return;
+        if (!CONFIG.botListenToRobots() && event.getAuthor().isBot()) return;
         String msg = event.getMessage().getContentStripped();
         if (msg.startsWith("|")) {
             LOGGER.info(Logging.COMMAND, "Got message from " + user(event.getAuthor()) + " with content: " + event.getMessage().getContentRaw() + " AND ITS A COMMAND!");

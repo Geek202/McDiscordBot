@@ -1,5 +1,7 @@
 package me.geek.tom.discord.search;
 
+import me.geek.tom.discord.DiscordBot;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,12 +10,10 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static me.geek.tom.discord.DiscordBot.FORGE_VERSION;
-
 public class ClassSearch {
 
     public static List<String> doSearch(String term) throws IOException {
-        JarFile jar = new JarFile(new File(FORGE_VERSION+".jar"));
+        JarFile jar = new JarFile(new File(DiscordBot.CONFIG.getForgeVersion()+".jar"));
         List<String> ret = new ArrayList<>();
 
         Enumeration<JarEntry> entries = jar.entries();

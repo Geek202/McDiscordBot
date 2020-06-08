@@ -2,6 +2,7 @@ package me.geek.tom.discord.search;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import me.geek.tom.discord.DiscordBot;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -13,7 +14,6 @@ import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static me.geek.tom.discord.DiscordBot.FORGE_VERSION;
 import static org.objectweb.asm.Opcodes.ASM8;
 
 public class ClassFieldDump {
@@ -22,7 +22,7 @@ public class ClassFieldDump {
         String filename = clazz.replace(".", "/");
         if (!filename.endsWith(".class"))
             filename = filename + ".class";
-        JarFile jar = new JarFile(new File(FORGE_VERSION+".jar"));
+        JarFile jar = new JarFile(new File(DiscordBot.CONFIG.getForgeVersion()+".jar"));
         JarEntry entry = jar.getJarEntry(filename);
         if (entry == null)
             throw new SimpleCommandExceptionType(() -> "Failed to locate class: " + clazz).create();

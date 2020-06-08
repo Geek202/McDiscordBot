@@ -26,7 +26,9 @@ public class Config {
         spec.define("bot.master", DEFAULT_VALUE);
         spec.define("bot.listenToRobots", false);
 
+        spec.define("forge.mappings", DEFAULT_VALUE);
         spec.define("forge.version", DEFAULT_VALUE);
+        spec.define("forge.mcversion", DEFAULT_VALUE);
 
         spec.correct(config);
 
@@ -37,10 +39,17 @@ public class Config {
 
         config.setComment("forge", "Settings for the Forge JAR to use");
         config.setComment("forge.version", "The version of Forge to use. Will be used as the filename like <version>.jar");
+        config.setComment("forge.mappings", "The mappings version that will be downloaded.");
+        config.setComment("forge.mcversion", "THe version of Minecraft to use.");
 
         config.save();
 
-        return new ConfigData(config.get("bot.token"), config.get("bot.master"), config.get("bot.listenToRobots"), config.get("forge.version"));
+        return new ConfigData(config.get("bot.token"),
+                config.get("bot.master"),
+                config.get("bot.listenToRobots"),
+                config.get("forge.version"),
+                config.get("forge.mappings"),
+                config.get("forge.mcversion"));
     }
 
     /**
@@ -63,12 +72,22 @@ public class Config {
          * The name of the Forge JAR to use.
          */
         private final String forgeVersion;
+        /**
+         * The MCP mappings version to download.
+         */
+        private final String forgeMappings;
+        /**
+         * The version of Minecraft to use.
+         */
+        private final String forgeMcVersion;
 
-        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion) {
+        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion, String forgeMappings, String forgeMcVersion) {
             this.botToken = botToken;
             this.botMaster = botMaster;
             this.botListenToRobots = botListenToRobots;
             this.forgeVersion = forgeVersion;
+            this.forgeMappings = forgeMappings;
+            this.forgeMcVersion = forgeMcVersion;
         }
 
         public String getBotToken() {
@@ -86,11 +105,21 @@ public class Config {
         public boolean isConfigured() {
             return  !botToken.equals(DEFAULT_VALUE) &&
                     !botMaster.equals(DEFAULT_VALUE) &&
-                    !forgeVersion.equals(DEFAULT_VALUE);
+                    !forgeVersion.equals(DEFAULT_VALUE) &&
+                    !forgeMappings.equals(DEFAULT_VALUE) &&
+                    !forgeMcVersion.equals(DEFAULT_VALUE);
         }
 
         public boolean botListenToRobots() {
             return botListenToRobots;
+        }
+
+        public String getForgeMappings() {
+            return forgeMappings;
+        }
+
+        public String getForgeMcVersion() {
+            return forgeMcVersion;
         }
     }
 

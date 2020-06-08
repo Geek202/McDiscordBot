@@ -2,7 +2,7 @@
 .idea/
 build/
 out/
-*.jar
+1.15.2-mapped.jar
 *.toml
 run/
 *.iml

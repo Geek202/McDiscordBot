@@ -18,10 +18,10 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
-import static me.geek.tom.discord.DiscordBot.FORGE_VERSION;
 import static me.geek.tom.discord.command.CommandParser.argument;
 import static me.geek.tom.discord.command.CommandParser.literal;
 
@@ -29,7 +29,6 @@ import static me.geek.tom.discord.command.CommandParser.literal;
  * Command that allows searching of the Minecraft JAR.
  */
 public class SearchCommand implements ICommand {
-
     @Override
     public void register(CommandDispatcher<MessageSender> dispatcher) {
         dispatcher.register(
@@ -77,7 +76,11 @@ public class SearchCommand implements ICommand {
                                 .executes(ctx -> {
                                     try {
                                         String cls = getString(ctx, "class");
-                                        List<String> res = MethodSearch.doSearch(cls);
+                                        List<String> res = MethodSearch.doSearch(cls)
+                                                .stream()
+                                                .filter(s -> !s.contains("private lambda$"))
+                                                .filter(s -> !s.contains("private static lambda$"))
+                                                .collect(Collectors.toList());
 
                                         User user = ctx.getSource().getAuthor();
                                         sendResults(
@@ -98,7 +101,7 @@ public class SearchCommand implements ICommand {
                     .executes(ctx -> {
                         User user = ctx.getSource().getAuthor();
                         ctx.getSource().getMessage().getChannel().sendMessage(
-                                forgeVerEmbed(FORGE_VERSION, DiscordBot.user(user), "Forge Version")).queue();
+                                DiscordBot.versionEmbed(DiscordBot.CONFIG.getForgeVersion(), DiscordBot.user(user), "Forge Version")).queue();
 
                         return 0;
                     }
@@ -115,18 +118,6 @@ public class SearchCommand implements ICommand {
                 .addField("Term:", "```"+term+"```", true)
                 .addField("Type:", "```"+type+"```", true)
                 .addField("Result count:", "```"+results.size()+"```", false);
-
-        return builder.build();
-    }
-
-    private MessageEmbed forgeVerEmbed(String version, String user, String type) {
-        EmbedBuilder builder = new EmbedBuilder();
-        DiscordBot.makeBotEmbed(builder); // Configure title and footer.
-
-        builder .setTitle("Search results")
-                .addField("Requested by:", "```"+user+"```", true)
-                .addField("Type:", "```"+type+"```", true)
-                .addField("Result:", "```"+version+"```", false);
 
         return builder.build();
     }

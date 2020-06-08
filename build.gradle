@@ -41,6 +41,7 @@ dependencies {
     // Logging
     shade 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
     shade 'org.apache.logging.log4j:log4j-iostreams:2.13.1'
+    shade 'org.apache.logging.log4j:log4j-core:2.13.1'
 
     // I/O
     shade 'commons-io:commons-io:2.6'

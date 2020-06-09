@@ -1,56 +1,51 @@
 plugins {
     id 'java'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 group 'me.geek.tom'
 version '1.0-SNAPSHOT'
 
-configurations {
-    shade
-    compile.extendsFrom shade
-}
-
 repositories {
     mavenCentral()
     maven { url "https://libraries.minecraft.net" }
     jcenter()
-    maven { url 'https://jitpack.io' }
+    //maven { url 'https://jitpack.io' }
     //maven { url 'https://files.minecraftforge.net/maven' }
 }
 
 dependencies {
     // Discord connection
-    shade('net.dv8tion:JDA:4.1.1_154') {
+    implementation('net.dv8tion:JDA:4.1.1_154') {
         exclude module: 'opus-java' // Don't need OPUS, and it broke shading.
     }
 
     // Command parsing
-    shade 'com.mojang:brigadier:1.0.17'
+    implementation 'com.mojang:brigadier:1.0.17'
 
     // Something I was planning on using, but nolonger need.
-    //shade 'net.minecraftforge:forgeflower:1.5.380.44'
-    //shade 'com.github.Geek202:ReFind:master-SNAPSHOT'
+    //implementation 'net.minecraftforge:forgeflower:1.5.380.44'
+    //implementation 'com.github.Geek202:ReFind:master-SNAPSHOT'
 
     // Config file
-    shade 'com.electronwill.night-config:core:3.6.3'
-    shade 'com.electronwill.night-config:toml:3.6.3'
+    implementation 'com.electronwill.night-config:core:3.6.3'
+    implementation 'com.electronwill.night-config:toml:3.6.3'
 
     // Paginated messages
-    shade 'com.jagrosh:jda-utilities:3.0.3'
+    implementation 'com.jagrosh:jda-utilities:3.0.3'
 
     // Logging
-    shade 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
-    shade 'org.apache.logging.log4j:log4j-iostreams:2.13.1'
-    shade 'org.apache.logging.log4j:log4j-core:2.13.1'
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.13.1'
+    implementation 'org.apache.logging.log4j:log4j-iostreams:2.13.1'
 
     // I/O
-    shade 'commons-io:commons-io:2.6'
-    shade 'com.google.code.gson:gson:2.8.5'
+    implementation 'commons-io:commons-io:2.6'
+    implementation 'com.google.code.gson:gson:2.8.5'
 
     // Jar scanning
-    shade 'org.ow2.asm:asm:8.0'
-    shade 'org.ow2.asm:asm-commons:8.0'
-    shade 'org.ow2.asm:asm-analysis:8.0'
+    implementation 'org.ow2.asm:asm:8.0'
+    implementation 'org.ow2.asm:asm-commons:8.0'
+    implementation 'org.ow2.asm:asm-analysis:8.0'
 }
 
 jar {
@@ -65,11 +60,5 @@ jar {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
                 "Main-Class": "me.geek.tom.discord.DiscordBot"
         ])
-    }
-
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)){
-            exclude 'META-INF', 'META-INF/**'
-        }
     }
 }

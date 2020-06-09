@@ -1,6 +1,7 @@
 package me.geek.tom.discord.startup;
 
 import com.google.gson.Gson;
+import com.mojang.brigadier.StringReader;
 import me.geek.tom.discord.DiscordBot;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -9,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -54,86 +54,83 @@ public class MappingsDownloader {
     private static File mergeMcpData(File notchSrg, File mcpDir) throws IOException {
         File output = new File("mappings", "mcp_joined_"+DiscordBot.CONFIG.getForgeMappings()+".csv");
 
-        // READ NOTCH
-        List<String> notch = Files.readAllLines(notchSrg.toPath()).stream()
-                .filter(s->s.startsWith("\t"))
-                .map(String::trim)
-                .collect(Collectors.toList());
+        // READ NOTCH DATA.
+        List<String> notch = new ArrayList<>(Files.readAllLines(notchSrg.toPath()));
 
-        // READ METHODS
-        List<String> mcpMethods = Files.readAllLines(new File(mcpDir, "methods.csv").toPath());
+        // PARSE NOTCH DATA.
+
+        String currentClass = null;
+        Map<String, FieldMapping> incompleteFields = new HashMap<>();
         Map<String, MethodMapping> incompleteMethods = new HashMap<>();
+        for (String line : notch) {
+            if (!line.startsWith("\t")) { // class
+                currentClass = line.split(" ")[1].replace("/", ".");
+            } else { // Field or method
+                if (currentClass == null)
+                    throw new IOException("Not a valid TSRG file, line: " + line);
+                String[] pts = line.trim().split(" ");
+                if (pts.length == 2) { // FIELD
+                    String obf = pts[0];
+                    String srg = pts[1];
+                    FieldMapping mapping = new FieldMapping();
+                    mapping.notch = obf;
+                    mapping.srg = srg;
+                    mapping.className = currentClass;
+                    incompleteFields.put(srg, mapping);
+                } else { // METHOD
+                    String obf = pts[0];
+                    String srg = pts[2];
+                    MethodMapping mapping = new MethodMapping();
+                    mapping.notch = obf;
+                    mapping.srg = srg;
+                    mapping.className = currentClass;
+                    incompleteMethods.put(srg, mapping);
+                }
+            }
+        }
+
+        // PARSE MCP DATA
+
+        // PARSE MCP METHODS
+        List<String> mcpMethods = Files.readAllLines(new File(mcpDir, "methods.csv").toPath());
+        List<MethodMapping> completeMethods = new ArrayList<>();
         for (String method : mcpMethods) {
+            if (method.contains("searge,name,side,desc"))continue; // SKIP FIRST LINE
+            String desc = method.substring(method.lastIndexOf(",")+1);
             String[] pts = method.split(",");
             String srg = pts[0];
-            if (srg.equals("searge")) continue; // Skip first line.
             String mcp = pts[1];
-            MethodMapping map = new MethodMapping();
-            String desc = map.desc;
-            try {
-                desc = pts[3];
-            } catch (ArrayIndexOutOfBoundsException ignored) {
-            }
-            map.desc = desc;
-            map.srg = srg;
-            map.mcp = mcp;
-            incompleteMethods.put(srg, map);
+            MethodMapping mapping = incompleteMethods.get(srg);
+            if (mapping == null) continue;
+            mapping.mcp = mcp;
+            mapping.desc = desc;
+            completeMethods.add(mapping);
         }
-        mcpMethods.clear(); // be nice to the gc and don't leave junk behind.
 
-        List<MethodMapping> completeMethods = new ArrayList<>();
-        // ADD NOTCH DATA TO METHODS
-        notch.stream().filter(s->s.split(" ").length==3)
-                .forEach(s -> {
-                    String[] pts = s.split(" ");
-                    String obf = pts[0];
-                    String sig = pts[1];
-                    String srg = pts[2];
+        // be nice to the gc and don't leave junk behind.
+        mcpMethods.clear();
+        incompleteMethods.clear();
 
-                    MethodMapping m = incompleteMethods.get(srg);
-                    if (m != null) {
-                        m.signature = sig;
-                        m.notch = obf;
-                        incompleteMethods.remove(srg);
-                        completeMethods.add(m);
-                    }
-                });
+        // PARSE MCP FIELDS
 
-        incompleteMethods.clear(); // dont have lots of junk, clean up.
-
-        // READ FIELDS
-
-        List<String> mcpFields = Files.readAllLines(new File(mcpDir, "methods.csv").toPath());
-        Map<String, FieldMapping> incompleteFields = new HashMap<>();
+        List<String> mcpFields = Files.readAllLines(new File(mcpDir, "fields.csv").toPath());
+        List<FieldMapping> completeFields = new ArrayList<>();
         for (String field : mcpFields) {
+            if (field.contains("searge,name,side,desc"))continue; // SKIP FIRST LINE
+            String desc = field.substring(field.lastIndexOf(",")+1);
             String[] pts = field.split(",");
             String srg = pts[0];
-            if (srg.equals("searge")) continue; // Skip first line.
             String mcp = pts[1];
-            FieldMapping map = new FieldMapping();
-            String desc = map.desc;
-            try {
-                desc = pts[3];
-            } catch (ArrayIndexOutOfBoundsException ignored) {
-            }
-            map.desc = desc;
-            map.srg = srg;
-            map.mcp = mcp;
-            incompleteFields.put(srg, map);
+            FieldMapping mapping = incompleteFields.get(srg);
+            if (mapping == null) continue;
+            mapping.mcp = mcp;
+            mapping.desc = desc;
+            completeFields.add(mapping);
         }
-        mcpFields.clear();
 
-        List<FieldMapping> completeFields = new ArrayList<>();
-        notch.stream().filter(s->s.split(" ").length==2).forEach(s -> {
-            String[] pts = s.split(" ");
-            String obf = pts[0];
-            String srg = pts[1];
-            FieldMapping m = incompleteFields.get(srg);
-            if (m != null) {
-                m.notch = obf;
-                completeFields.add(m);
-            }
-        });
+        // be nice to the gc and don't leave junk behind.
+        mcpFields.clear();
+        incompleteFields.clear();
 
         List<String> outputMethods = completeMethods.stream().map(MethodMapping::toString).collect(Collectors.toList());
         List<String> outputFields = completeFields.stream().map(FieldMapping::toString).collect(Collectors.toList());
@@ -217,27 +214,64 @@ public class MappingsDownloader {
         public String srg;
         public String mcp;
         public String desc;
-        public String signature;
+        public String className;
 
         public MethodMapping() {
             notch = "<PLACE_HOLDER>";
             srg = "<PLACE_HOLDER>";
             mcp = "<PLACE_HOLDER>";
             desc = "<PLACE_HOLDER>";
-            signature = "<PLACE_HOLDER>";
+            className = "<PLACE_HOLDER>";
         }
 
-        public MethodMapping(String notch, String srg, String mcp, String desc, String signature) {
+        public MethodMapping(String notch, String srg, String mcp, String desc, String className) {
             this.notch = notch;
             this.srg = srg;
             this.mcp = mcp;
             this.desc = desc;
-            this.signature = signature;
+            this.className = className;
+        }
+
+        public static MethodMapping fromString(String line) {
+            StringReader reader = new StringReader(line.replaceFirst("METHOD ", ""));
+
+            int start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String classname = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String notch = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String srg = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String mcp = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            String desc = reader.getRemaining();
+
+            return new MethodMapping(notch, srg, mcp, desc.equals("<PLACE_HOLDER>") ? "" : desc, classname);
         }
 
         @Override
         public String toString() {
-            return notch + "," + srg + "," + mcp + "," + desc + "," + signature;
+            return "METHOD " + className + "," + notch + "," + srg + "," + mcp + "," + desc;
+        }
+
+        public String toNiceString() {
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            return "Class: `"+className+"`\nMethod: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr;
         }
     }
 
@@ -246,24 +280,64 @@ public class MappingsDownloader {
         public String srg;
         public String mcp;
         public String desc;
+        public String className;
 
         public FieldMapping() {
             notch = "<PLACE_HOLDER>";
             srg = "<PLACE_HOLDER>";
             mcp = "<PLACE_HOLDER>";
             desc = "<PLACE_HOLDER>";
+            className = "<PLACE_HOLDER>";
         }
 
-        public FieldMapping(String notch, String srg, String mcp, String desc) {
+        public static FieldMapping fromString(String line) {
+            StringReader reader = new StringReader(line.replaceFirst("METHOD ", ""));
+
+            int start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String classname = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String notch = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String srg = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String mcp = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
+            String desc = reader.getRemaining();
+
+            return new FieldMapping(notch, srg, mcp, desc.equals("<PLACE_HOLDER>") ? "" : desc, classname);
+        }
+
+        public FieldMapping(String notch, String srg, String mcp, String desc, String className) {
             this.notch = notch;
             this.srg = srg;
             this.mcp = mcp;
             this.desc = desc;
+            this.className = className;
         }
 
         @Override
         public String toString() {
-            return notch + "," + srg + "," + mcp + "," + desc;
+            return "FIELD " + className + "," + notch + "," + srg + "," + mcp + "," + desc;
+        }
+
+        public String toNiceString() {
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            return "Class: `"+className+"`\nField: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr;
         }
     }
 

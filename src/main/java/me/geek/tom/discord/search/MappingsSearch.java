@@ -1,5 +1,6 @@
 package me.geek.tom.discord.search;
 
+import javafx.util.Pair;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.startup.MappingsDownloader;
 
@@ -29,5 +30,12 @@ public class MappingsSearch {
         return fields.filter(s->
                         s.srg.equals(field) || s.mcp.equals(field)
         ).collect(Collectors.toList());
+    }
+
+    public static List<Pair<String, String>> searchClasses(String cls) throws IOException {
+        Stream<Pair<String, String>> classes = Files.readAllLines(DiscordBot.MAPPINGS.getClassMappingsFile().toPath()).stream()
+                .map(s-> { String[] pts = s.split(","); return new Pair<>(pts[0], pts[1]); });
+
+        return classes.filter(p -> p.getValue().equals(cls)).collect(Collectors.toList());
     }
 }

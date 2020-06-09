@@ -2,6 +2,7 @@ package me.geek.tom.discord.command.commands;
 
 import com.jagrosh.jdautilities.menu.Paginator;
 import com.mojang.brigadier.CommandDispatcher;
+import javafx.util.Pair;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.command.MessageSender;
 import me.geek.tom.discord.error.CommandInvokationException;
@@ -103,6 +104,45 @@ public class MappingsCommand implements ICommand {
                             }
 
                             return 0;
-                        }))));
+                        })))
+                .then(literal("class")
+                        .then(argument("class", greedyString()).executes(ctx -> {
+                            try {
+                                List<Pair<String, String>> res = MappingsSearch.searchClasses(getString(ctx, "class"));
+                                User user = ctx.getSource().getAuthor();
+                                Paginator.Builder builder = new Paginator.Builder()
+                                        .setEventWaiter(DiscordBot.waiter)        // event thing
+                                        .setColumns(1)                            // Only one column pls
+                                        .setItemsPerPage(10)                      // 10 items means less chance of overflow. :D
+                                        .waitOnSinglePage(false)                  // Should it immediatly timeout if there is one page
+                                        .useNumberedItems(false)                  // No item numbers pls
+                                        .showPageNumbers(true)                    // What page are you on?
+                                        .setTimeout(60, TimeUnit.SECONDS)  // Don't keep the pager alive for too long.
+                                        .setColor(Color.YELLOW)                   // Yellow!
+                                        .setText("MCP Classes:")                  // Title, is in the message text above the embed
+                                        .setUsers(user)                           // Only the original user pls
+                                        .setFinalAction(m -> {                    // Cleanup
+                                            try {
+                                                m.clearReactions().queue();
+                                            } catch (PermissionException e) {
+                                                m.delete().queue();
+                                            } });
+                                builder.clearItems();
+                                if (!res.isEmpty())
+                                    res.stream().map(this::classMapToString).forEach(builder::addItems);
+                                else
+                                    builder.addItems("No results. "+MappingsSearch.NO_RESULTS_EMOJI);
+                                builder.build().paginate(ctx.getSource().getMessage().getChannel(), 1);
+                            } catch (IOException e) {
+                                throw new CommandInvokationException(e);
+                            }
+
+                            return 0;
+                        })))
+        );
+    }
+
+    private String classMapToString(Pair<String, String> mapping) {
+        return "Class: `"+mapping.getKey()+"` -> `"+mapping.getValue()+"`";
     }
 }

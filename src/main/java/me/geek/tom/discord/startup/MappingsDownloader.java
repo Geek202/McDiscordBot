@@ -143,10 +143,11 @@ public class MappingsDownloader {
 
     private static File copyClassnames(File notchSrg, File mcpDir) throws IOException {
         List<String> classes = Files.readAllLines(notchSrg.toPath()).stream()
-                .filter(s->!s.startsWith("\t")) // Only class name lines
-                .map(String::trim) // Do this after the \t check, as this would strip it
+                .filter(s->!s.startsWith("\t")) // Only class name lines.
+                .map(String::trim) // Do this after the \t check, as this would strip it.
                 .filter(s->!s.isEmpty())
-                .map(s->s.replace(" ", ",")) // Convert it to CSV-like data
+                .map(s->s.replace(" ", ",")) // Convert it to CSV-like data.
+                .map(s->s.replace("/", ".")) // Make nicer fully-qualified class names.
                 .collect(Collectors.toList());
         File out = new File(mcpDir, "classes.csv");
         FileUtils.writeLines(out, classes);

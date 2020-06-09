@@ -21,6 +21,10 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.time.Instant;
+import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class DiscordBot extends ListenerAdapter {
 
@@ -34,6 +38,14 @@ public class DiscordBot extends ListenerAdapter {
     public static final EventWaiter waiter = new EventWaiter();
     public static MappingsDownloader.MappingsData MAPPINGS;
 
+    private static JDA jda;
+
+    private static final ScheduledExecutorService activityUpdator = Executors.newSingleThreadScheduledExecutor(r -> {
+        Thread thread = new Thread(r, "Activity-Update-Thread.");
+        thread.setDaemon(true);
+        return thread;
+    });
+
     public static void main(String[] args) throws Exception {
         LOGGER.info(Logging.LAUNCH, "Starting bot...");
 
@@ -46,12 +58,17 @@ public class DiscordBot extends ListenerAdapter {
         MAPPINGS = MappingsDownloader.setupMcp();
 
         JDABuilder builder = JDABuilder.createDefault(CONFIG.getBotToken());
-        builder.setActivity(Activity.playing("with "+CONFIG.getForgeVersion()));
+        builder.setActivity(Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
 
         DiscordBot bot = new DiscordBot();
         builder.addEventListeners(bot, waiter);
-        JDA jda = builder.build();
+        jda = builder.build();
         jda.awaitReady();
+        // TODO: Random status message.
+        //activityUpdator.scheduleAtFixedRate(DiscordBot::updateStatus, 1, 1, TimeUnit.MINUTES);
+    }
+
+    private static void updateStatus() {
     }
 
     public static MessageEmbed versionEmbed(String version, String user, String type) {
@@ -75,7 +92,7 @@ public class DiscordBot extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event) {
         if (!CONFIG.botListenToRobots() && event.getAuthor().isBot()) return;
         String msg = event.getMessage().getContentStripped();
-        if (msg.startsWith("|")) {
+        if (msg.startsWith(CONFIG.getCommandPrefix())) {
             LOGGER.info(Logging.COMMAND, "Got message from " + user(event.getAuthor()) + " with content: " + event.getMessage().getContentRaw() + " AND ITS A COMMAND!");
             try {
                 parser.handle(event.getMessage());

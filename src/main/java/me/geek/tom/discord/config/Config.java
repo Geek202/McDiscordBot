@@ -25,6 +25,7 @@ public class Config {
         spec.define("bot.token", DEFAULT_VALUE);
         spec.define("bot.master", DEFAULT_VALUE);
         spec.define("bot.listenToRobots", false);
+        spec.define("bot.prefix", "|");
 
         spec.define("forge.mappings", DEFAULT_VALUE);
         spec.define("forge.version", DEFAULT_VALUE);
@@ -36,6 +37,7 @@ public class Config {
         config.setComment("bot.token", "The token the bot uses to login - from discord.com/developers");
         config.setComment("bot.master", "The user id of the owner of this bot.");
         config.setComment("bot.listenToRobots", "Should the bot listen to commands/messages from other bots.");
+        config.setComment("bot.prefix", "The prefix to look for command messages.");
 
         config.setComment("forge", "Settings for the Forge JAR to use");
         config.setComment("forge.version", "The version of Forge to use. Will be used as the filename like <version>.jar");
@@ -49,7 +51,8 @@ public class Config {
                 config.get("bot.listenToRobots"),
                 config.get("forge.version"),
                 config.get("forge.mappings"),
-                config.get("forge.mcversion"));
+                config.get("forge.mcversion"),
+                config.get("bot.prefix"));
     }
 
     /**
@@ -80,14 +83,19 @@ public class Config {
          * The version of Minecraft to use.
          */
         private final String forgeMcVersion;
+        /**
+         * The prefix for commands
+         */
+        private final String commandPrefix;
 
-        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion, String forgeMappings, String forgeMcVersion) {
+        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion, String forgeMappings, String forgeMcVersion, String commandPrefix) {
             this.botToken = botToken;
             this.botMaster = botMaster;
             this.botListenToRobots = botListenToRobots;
             this.forgeVersion = forgeVersion;
             this.forgeMappings = forgeMappings;
             this.forgeMcVersion = forgeMcVersion;
+            this.commandPrefix = commandPrefix;
         }
 
         public String getBotToken() {
@@ -120,6 +128,10 @@ public class Config {
 
         public String getForgeMcVersion() {
             return forgeMcVersion;
+        }
+
+        public String getCommandPrefix() {
+            return commandPrefix;
         }
     }
 

@@ -2,7 +2,6 @@ package me.geek.tom.discord.command.commands;
 
 import com.jagrosh.jdautilities.menu.Paginator;
 import com.mojang.brigadier.CommandDispatcher;
-import javafx.util.Pair;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.command.MessageSender;
 import me.geek.tom.discord.error.CommandInvokationException;
@@ -11,7 +10,7 @@ import me.geek.tom.discord.startup.MappingsDownloader;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -108,7 +107,7 @@ public class MappingsCommand implements ICommand {
                 .then(literal("class")
                         .then(argument("class", greedyString()).executes(ctx -> {
                             try {
-                                List<Pair<String, String>> res = MappingsSearch.searchClasses(getString(ctx, "class"));
+                                List<MappingsSearch.ClassMapping> res = MappingsSearch.searchClasses(getString(ctx, "class"));
                                 User user = ctx.getSource().getAuthor();
                                 Paginator.Builder builder = new Paginator.Builder()
                                         .setEventWaiter(DiscordBot.waiter)        // event thing
@@ -142,7 +141,7 @@ public class MappingsCommand implements ICommand {
         );
     }
 
-    private String classMapToString(Pair<String, String> mapping) {
-        return "Class: `"+mapping.getKey()+"` -> `"+mapping.getValue()+"`";
+    private String classMapToString(MappingsSearch.ClassMapping mapping) {
+        return "Class: `"+mapping.getNotch()+"` -> `"+mapping.getMcp()+"`";
     }
 }

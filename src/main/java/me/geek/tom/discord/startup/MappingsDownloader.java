@@ -3,6 +3,7 @@ package me.geek.tom.discord.startup;
 import com.google.gson.Gson;
 import com.mojang.brigadier.StringReader;
 import me.geek.tom.discord.DiscordBot;
+import me.geek.tom.discord.search.MappingsSearch;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,6 +15,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -58,8 +61,13 @@ public class MappingsDownloader {
         List<String> notch = new ArrayList<>(Files.readAllLines(notchSrg.toPath()));
 
         // PARSE NOTCH DATA.
-
         String currentClass = null;
+        List<MappingsSearch.ClassMapping> classMappings =
+                notch.stream()
+                        .filter(s->!s.startsWith("\t"))
+                        .map(s-> { String[] pts = s.split(" "); return new MappingsSearch.ClassMapping(pts[0], pts[1]); })
+                        .collect(Collectors.toList());
+
         Map<String, FieldMapping> incompleteFields = new HashMap<>();
         Map<String, MethodMapping> incompleteMethods = new HashMap<>();
         for (String line : notch) {
@@ -79,15 +87,19 @@ public class MappingsDownloader {
                     incompleteFields.put(srg, mapping);
                 } else { // METHOD
                     String obf = pts[0];
+                    String signature = MappingsData.remapDesc(pts[1], classMappings);
                     String srg = pts[2];
                     MethodMapping mapping = new MethodMapping();
                     mapping.notch = obf;
                     mapping.srg = srg;
                     mapping.className = currentClass;
+                    mapping.signature = signature;
+
                     incompleteMethods.put(srg, mapping);
                 }
             }
         }
+        classMappings.clear(); // keep it tidy.
 
         // PARSE MCP DATA
 
@@ -216,6 +228,7 @@ public class MappingsDownloader {
         public String mcp;
         public String desc;
         public String className;
+        public String signature;
 
         public MethodMapping() {
             notch = "<PLACE_HOLDER>";
@@ -225,12 +238,13 @@ public class MappingsDownloader {
             className = "<PLACE_HOLDER>";
         }
 
-        public MethodMapping(String notch, String srg, String mcp, String desc, String className) {
+        public MethodMapping(String notch, String srg, String mcp, String desc, String className, String signature) {
             this.notch = notch;
             this.srg = srg;
             this.mcp = mcp;
             this.desc = desc;
             this.className = className;
+            this.signature = signature;
         }
 
         public static MethodMapping fromString(String line) {
@@ -260,19 +274,29 @@ public class MappingsDownloader {
             String mcp = reader.getString().substring(start, reader.getCursor());
             reader.skip();
 
+            start = reader.getCursor();
+            while (reader.canRead() && !(reader.peek() == ','))
+                reader.skip();
+            String signature = reader.getString().substring(start, reader.getCursor());
+            reader.skip();
+
             String desc = reader.getRemaining();
 
-            return new MethodMapping(notch, srg, mcp, desc.equals("<PLACE_HOLDER>") ? "" : desc, classname);
+            return new MethodMapping(notch, srg, mcp, desc.equals("<PLACE_HOLDER>") ? "" : desc, classname, signature);
         }
 
         @Override
         public String toString() {
-            return "METHOD " + className + "," + notch + "," + srg + "," + mcp + "," + desc;
+            return "METHOD " + className + "," + notch + "," + srg + "," + mcp + "," + signature + "," + desc;
+        }
+
+        public String generateATLine() {
+            return "AT: `public " + className + " " + srg + signature + " #" + mcp + "`"; // public <class> <srg> #<mcp>
         }
 
         public String toNiceString() {
             String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
-            return "Class: `"+className+"`\nMethod: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr;
+            return "Class: `"+className+"`\nMethod: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }
 
@@ -336,9 +360,13 @@ public class MappingsDownloader {
             return "FIELD " + className + "," + notch + "," + srg + "," + mcp + "," + desc;
         }
 
+        public String generateATLine() {
+            return "AT: `public " + className + " " + srg + " #" + mcp + "`"; // public <class> <srg> #<mcp>
+        }
+
         public String toNiceString() {
             String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
-            return "Class: `"+className+"`\nField: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr;
+            return "Class: `"+className+"`\nField: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }
 
@@ -346,6 +374,23 @@ public class MappingsDownloader {
         private final File classMappingsFile;
         private final File joinedMcpFile;
         private final File mcpParamData;
+
+        private static Pattern CLASS = Pattern.compile("L(?<cls>[^;]+);");
+
+        public static String remapDesc(String desc, List<MappingsSearch.ClassMapping> mappings) {
+            Matcher matcher = CLASS.matcher(desc);
+
+            StringBuffer buf = new StringBuffer();
+
+            while (matcher.find()) {
+                String cls = matcher.group("cls");
+                List<MappingsSearch.ClassMapping> newCls = mappings.stream().filter(m->m.getNotch().equals(cls)).collect(Collectors.toList());
+
+                matcher.appendReplacement(buf, Matcher.quoteReplacement("L" + (newCls.isEmpty() ? cls : newCls.get(0).getMcp()) + ";"));
+            }
+            matcher.appendTail(buf);
+            return buf.toString();
+        }
 
         public MappingsData(File classMappingsFile, File joinedMcpFile, File mcpParamData) {
             this.classMappingsFile = classMappingsFile;

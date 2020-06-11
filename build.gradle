@@ -42,6 +42,9 @@ dependencies {
     implementation 'commons-io:commons-io:2.6'
     implementation 'com.google.code.gson:gson:2.8.5'
 
+    // Github
+    implementation 'org.kohsuke:github-api:1.113'
+
     // Jar scanning
     implementation 'org.ow2.asm:asm:8.0'
     implementation 'org.ow2.asm:asm-commons:8.0'

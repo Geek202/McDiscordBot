@@ -7,6 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.command.commands.HelpCommand;
+import me.geek.tom.discord.command.commands.InfoCommand;
 import me.geek.tom.discord.command.commands.MappingsCommand;
 import me.geek.tom.discord.command.commands.SearchCommand;
 import net.dv8tion.jda.api.entities.Message;
@@ -39,7 +40,7 @@ public class CommandParser {
         new SearchCommand().register(dispatcher);
         new HelpCommand().register(dispatcher);
         new MappingsCommand().register(dispatcher);
-        //new TestPageCommand().register(dispatcher);
+        new InfoCommand().register(dispatcher);
     }
 
     public static LiteralArgumentBuilder<MessageSender> literal(String name) {

@@ -26,6 +26,7 @@ public class Config {
         spec.define("bot.master", DEFAULT_VALUE);
         spec.define("bot.listenToRobots", false);
         spec.define("bot.prefix", "|");
+        spec.defineInRange("bot.activityUpdateRate", 30, 15, 300);
 
         spec.define("forge.mappings", DEFAULT_VALUE);
         spec.define("forge.version", DEFAULT_VALUE);
@@ -38,6 +39,7 @@ public class Config {
         config.setComment("bot.master", "The user id of the owner of this bot.");
         config.setComment("bot.listenToRobots", "Should the bot listen to commands/messages from other bots.");
         config.setComment("bot.prefix", "The prefix to look for command messages.");
+        config.setComment("bot.activityUpdateRate", "How often the bot updates the status message (seconds)");
 
         config.setComment("forge", "Settings for the Forge JAR to use");
         config.setComment("forge.version", "The version of Forge to use. Will be used as the filename like <version>.jar");
@@ -52,7 +54,8 @@ public class Config {
                 config.get("forge.version"),
                 config.get("forge.mappings"),
                 config.get("forge.mcversion"),
-                config.get("bot.prefix"));
+                config.get("bot.prefix"),
+                config.get("bot.activityUpdateRate"));
     }
 
     /**
@@ -72,6 +75,14 @@ public class Config {
          */
         private final boolean botListenToRobots;
         /**
+         * The prefix for commands
+         */
+        private final String commandPrefix;
+        /**
+         * How often the bot updates its activity message (seconds)
+         */
+        private final int botActivityUpdateRate;
+        /**
          * The name of the Forge JAR to use.
          */
         private final String forgeVersion;
@@ -83,12 +94,8 @@ public class Config {
          * The version of Minecraft to use.
          */
         private final String forgeMcVersion;
-        /**
-         * The prefix for commands
-         */
-        private final String commandPrefix;
 
-        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion, String forgeMappings, String forgeMcVersion, String commandPrefix) {
+        private ConfigData(String botToken, String botMaster, boolean botListenToRobots, String forgeVersion, String forgeMappings, String forgeMcVersion, String commandPrefix, int botActivityUpdateRate) {
             this.botToken = botToken;
             this.botMaster = botMaster;
             this.botListenToRobots = botListenToRobots;
@@ -96,6 +103,7 @@ public class Config {
             this.forgeMappings = forgeMappings;
             this.forgeMcVersion = forgeMcVersion;
             this.commandPrefix = commandPrefix;
+            this.botActivityUpdateRate = botActivityUpdateRate;
         }
 
         public String getBotToken() {
@@ -132,6 +140,10 @@ public class Config {
 
         public String getCommandPrefix() {
             return commandPrefix;
+        }
+
+        public int getBotActivityUpdateRate() {
+            return botActivityUpdateRate;
         }
     }
 

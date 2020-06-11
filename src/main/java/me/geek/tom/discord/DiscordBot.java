@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ReadyEvent;
@@ -21,10 +22,12 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.time.Instant;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class DiscordBot extends ListenerAdapter {
 
@@ -39,6 +42,9 @@ public class DiscordBot extends ListenerAdapter {
     public static MappingsDownloader.MappingsData MAPPINGS;
 
     private static JDA jda;
+
+    private static List<Supplier<Activity>> ACTIVITIES;
+    private static int currentActivity = 0;
 
     private static final ScheduledExecutorService activityUpdator = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "Activity-Update-Thread.");
@@ -56,19 +62,36 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         MAPPINGS = MappingsDownloader.setupMcp();
+        ACTIVITIES = new ArrayList<>();
+        ACTIVITIES.add(()-> Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
+        ACTIVITIES.add(()-> Activity.playing("with "+CONFIG.getForgeVersion()));
+        ACTIVITIES.add(()-> {
+            int userCount = 0;
+            int guildCount = 0;
+            for (Guild guild : jda.getGuilds()) {
+                userCount += guild.getMemberCount();
+                guildCount++;
+            }
+            return Activity.watching(userCount + " users on " + guildCount + " guilds!");
+        });
+        ACTIVITIES.add(()-> Activity.watching(MappingsDownloader.mappingsCount + " lines of mappings."));
 
         JDABuilder builder = JDABuilder.createDefault(CONFIG.getBotToken());
-        builder.setActivity(Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
+        builder.setActivity(ACTIVITIES.get(currentActivity).get());
+        currentActivity++;
+        currentActivity%=ACTIVITIES.size();
 
         DiscordBot bot = new DiscordBot();
         builder.addEventListeners(bot, waiter);
         jda = builder.build();
         jda.awaitReady();
-        // TODO: Random status message.
-        //activityUpdator.scheduleAtFixedRate(DiscordBot::updateStatus, 1, 1, TimeUnit.MINUTES);
+        activityUpdator.scheduleAtFixedRate(DiscordBot::updateStatus, 1, 20, TimeUnit.SECONDS);
     }
 
     private static void updateStatus() {
+        jda.getPresence().setActivity(ACTIVITIES.get(currentActivity).get());
+        currentActivity++;
+        currentActivity%=ACTIVITIES.size();
     }
 
     public static MessageEmbed versionEmbed(String version, String user, String type) {
@@ -105,8 +128,8 @@ public class DiscordBot extends ListenerAdapter {
     }
 
     public static void makeBotEmbed(EmbedBuilder builder) {
-        builder .setAuthor("Tom_The_Bot#8678")
-                .setFooter("Tom_The_Bot - Powered by Java and brigadier! - Tom_The_Geek#8559")
+        builder .setAuthor(user(jda.getSelfUser()))
+                .setFooter(jda.getSelfUser().getName()+" - Powered by Java and Brigadier! - Tom_The_Geek#8559")
                 .setTimestamp(Instant.now());
     }
 

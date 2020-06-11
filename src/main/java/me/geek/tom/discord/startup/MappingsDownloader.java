@@ -25,6 +25,8 @@ public class MappingsDownloader {
     public static final Gson GSON = new Gson();
     private static final Logger LOGGER = LogManager.getLogger();
 
+    public static int mappingsCount = 0;
+
     public static MappingsData setupMcp() throws IOException {
         LOGGER.info("Setting up MCP mapping data...");
         LOGGER.info("Downloading MCPConfig for Minecraft version " + DiscordBot.CONFIG.getForgeMcVersion());
@@ -148,6 +150,7 @@ public class MappingsDownloader {
         List<String> outputFields = completeFields.stream().map(FieldMapping::toString).collect(Collectors.toList());
         List<String> outputLines = new ArrayList<>(outputMethods);
         outputLines.addAll(outputFields);
+        mappingsCount += outputLines.size();
         FileUtils.writeLines(output, outputLines);
 
         return output;
@@ -162,6 +165,7 @@ public class MappingsDownloader {
                 .map(s->s.replace("/", ".")) // Make nicer fully-qualified class names.
                 .collect(Collectors.toList());
         File out = new File(mcpDir, "classes.csv");
+        mappingsCount += classes.size();
         FileUtils.writeLines(out, classes);
         return out;
     }

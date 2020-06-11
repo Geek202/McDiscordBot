@@ -85,7 +85,7 @@ public class DiscordBot extends ListenerAdapter {
         builder.addEventListeners(bot, waiter);
         jda = builder.build();
         jda.awaitReady();
-        activityUpdator.scheduleAtFixedRate(DiscordBot::updateStatus, 1, 20, TimeUnit.SECONDS);
+        activityUpdator.scheduleAtFixedRate(DiscordBot::updateStatus, CONFIG.getBotActivityUpdateRate(), CONFIG.getBotActivityUpdateRate(), TimeUnit.SECONDS);
     }
 
     private static void updateStatus() {

@@ -2,8 +2,16 @@ package me.geek.tom.discord.search;
 
 import static org.objectweb.asm.Opcodes.*;
 
+/**
+ * Helper functions for using ASM
+ */
 public class AsmUtil {
 
+    /**
+     * Constructs a Java access string from an access int
+     * @param access The access int
+     * @return The Java string representation.
+     */
     public static String access(int access) {
         StringBuilder builder = new StringBuilder();
 

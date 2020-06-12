@@ -9,8 +9,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Allows the searching of mcp mappings in the bot's merged format
+ */
 public class MappingsSearch {
 
+    /**
+     * Emoji to show when no results are found.
+     */
     public static final String NO_RESULTS_EMOJI = "\uD83D\uDE2F";
 
     public static List<MappingsDownloader.MethodMapping> searchMethods(String method) throws IOException {

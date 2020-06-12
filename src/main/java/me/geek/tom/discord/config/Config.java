@@ -41,8 +41,8 @@ public class Config {
         config.setComment("bot.prefix", "The prefix to look for command messages.");
         config.setComment("bot.activityUpdateRate", "How often the bot updates the status message (seconds)");
 
-        config.setComment("forge", "Settings for the Forge JAR to use");
-        config.setComment("forge.version", "The version of Forge to use. Will be used as the filename like <version>.jar");
+        config.setComment("forge", "Settings for the Forge/Mcp/Minecraft to use");
+        config.setComment("forge.version", "The version of Forge to use.");
         config.setComment("forge.mappings", "The mappings version that will be downloaded.");
         config.setComment("forge.mcversion", "THe version of Minecraft to use.");
 

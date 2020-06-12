@@ -17,6 +17,9 @@ import java.util.jar.JarFile;
 import static me.geek.tom.discord.search.AsmUtil.access;
 import static org.objectweb.asm.Opcodes.ASM8;
 
+/**
+ * Dumps all methods in a class.
+ */
 public class MethodSearch {
 
     public static List<String> doSearch(String clazz) throws IOException, CommandSyntaxException {

@@ -20,6 +20,9 @@ import static com.mojang.brigadier.arguments.StringArgumentType.greedyString;
 import static me.geek.tom.discord.command.CommandParser.argument;
 import static me.geek.tom.discord.command.CommandParser.literal;
 
+/**
+ * Command that allows searching of mcp mappings. Also registers {@code |mappings_ver} to get the mappings version the bot is using.
+ */
 public class MappingsCommand implements ICommand {
     @Override
     public void register(CommandDispatcher<MessageSender> dispatcher) {
@@ -141,6 +144,11 @@ public class MappingsCommand implements ICommand {
         );
     }
 
+    /**
+     * Constructs a nice string from a {@link MappingsSearch.ClassMapping}
+     * @param mapping The mapping to convert
+     * @return A nice {@link String} representing the mapping.
+     */
     private String classMapToString(MappingsSearch.ClassMapping mapping) {
         return "Class: `"+mapping.getNotch()+"` -> `"+mapping.getMcp()+"`";
     }

@@ -109,6 +109,14 @@ public class SearchCommand implements ICommand {
         );
     }
 
+    /**
+     * Constructs the embed showing result count, user, search term and type
+     * @param results The {@link List<String>} of commands
+     * @param user The user that requested the search
+     * @param term What the user searched for.
+     * @param type What type of search (methods, classes, etc)
+     * @return A {@link MessageEmbed} to be shown above the results
+     */
     private MessageEmbed createTopResultEmbed(List<String> results, String user, String term, String type) {
         EmbedBuilder builder = new EmbedBuilder();
         DiscordBot.makeBotEmbed(builder); // Configure title and footer.
@@ -122,6 +130,13 @@ public class SearchCommand implements ICommand {
         return builder.build();
     }
 
+    /**
+     * Paginates the list of results and displays the top embed above.
+     * @param topEmbed The embed from {@link SearchCommand#createTopResultEmbed}
+     * @param results The {@link List<String>} of results.
+     * @param user The user that requested the results
+     * @param channel The channel to send the results to.
+     */
     private void sendResults(MessageEmbed topEmbed, List<String> results, User user, MessageChannel channel) {
         Paginator.Builder builder = new Paginator.Builder()
                 .setEventWaiter(DiscordBot.waiter)        // event thing

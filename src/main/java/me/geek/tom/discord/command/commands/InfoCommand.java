@@ -1,10 +1,8 @@
 package me.geek.tom.discord.command.commands;
 
 import com.jagrosh.jdautilities.menu.Paginator;
-import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.command.MessageSender;
 import me.geek.tom.discord.error.CommandInvokationException;
@@ -19,8 +17,14 @@ import java.util.concurrent.TimeUnit;
 
 import static me.geek.tom.discord.command.CommandParser.literal;
 
+/**
+ * Adds a command that allows listing contributors and commits on the bot's GitHub
+ */
 public class InfoCommand implements ICommand {
 
+    /**
+     * An instance of the GitHub api.
+     */
     private static GitHub github;
 
     static {
@@ -32,6 +36,12 @@ public class InfoCommand implements ICommand {
         }
     }
 
+    /**
+     * Registers the commands for {@code |author} and {@code |credits},
+     * and also registers {@code |github} if the {@link GitHub} object was created successfully.
+     *
+     * @param dispatcher The dispatcher to register the command to.
+     */
     @Override
     public void register(CommandDispatcher<MessageSender> dispatcher) {
         dispatcher.register(literal("authors").executes(this::authors));
@@ -45,6 +55,10 @@ public class InfoCommand implements ICommand {
         }
     }
 
+    /**
+     * If you add something, credit yourself here
+     * @return The {@link EmbedBuilder} for the {@code |authors} command.
+     */
     private EmbedBuilder createAuthorEmbed() {
         EmbedBuilder builder = new EmbedBuilder();
         DiscordBot.makeBotEmbed(builder);
@@ -58,11 +72,23 @@ public class InfoCommand implements ICommand {
         return builder;
     }
 
+    /**
+     * Handles the command {@code |authors}
+     *
+     * @param ctx CommandContext
+     * @return 0
+     */
     private int authors(CommandContext<MessageSender> ctx) {
         ctx.getSource().getMessage().getChannel().sendMessage(createAuthorEmbed().build()).queue();
         return 0;
     }
 
+    /**
+     * Handles the command {@code |github commits}
+     *
+     * @param ctx CommandContext
+     * @return 0
+     */
     private int commits(CommandContext<MessageSender> ctx) {
         try {
             User user = ctx.getSource().getAuthor();
@@ -90,7 +116,7 @@ public class InfoCommand implements ICommand {
             PagedIterable<GHCommit> commits = repo.listCommits();
             builder.setText("Commits for Geek202/McDiscordBot");
             for (GHCommit commit : commits) {
-                builder.addItems("`"+commit.getSHA1()+"` `" + commit.getAuthor().getName() + "`: `" + commit.getCommitShortInfo().getMessage() + "`");
+                builder.addItems("`"+commit.getSHA1().substring(0, 7)+"` `" + commit.getAuthor().getName() + "`: `" + commit.getCommitShortInfo().getMessage() + "`");
             }
             builder.build().paginate(ctx.getSource().getMessage().getChannel(), 1);
         } catch (IOException e) {
@@ -100,6 +126,12 @@ public class InfoCommand implements ICommand {
         return 0;
     }
 
+    /**
+     * Handles the command {@code |github contribs}
+     *
+     * @param ctx CommandContext
+     * @return 0
+     */
     private int contributors(CommandContext<MessageSender> ctx) {
         try {
             EmbedBuilder builder = new EmbedBuilder();

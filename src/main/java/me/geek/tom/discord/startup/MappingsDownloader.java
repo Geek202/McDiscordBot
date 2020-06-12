@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+/**
+ * Handles the download and merging of MCP mappings.
+ */
 public class MappingsDownloader {
     public static final Gson GSON = new Gson();
     private static final Logger LOGGER = LogManager.getLogger();

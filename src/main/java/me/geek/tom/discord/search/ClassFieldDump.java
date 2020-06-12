@@ -16,6 +16,9 @@ import java.util.jar.JarFile;
 
 import static org.objectweb.asm.Opcodes.ASM8;
 
+/**
+ * Dumps fields in a class.
+ */
 public class ClassFieldDump {
 
     public static List<String> get(String clazz) throws IOException, CommandSyntaxException {

@@ -12,16 +12,21 @@ import me.geek.tom.discord.command.commands.MappingsCommand;
 import me.geek.tom.discord.command.commands.SearchCommand;
 import net.dv8tion.jda.api.entities.Message;
 
+/**
+ * Handles the execution of the bots commands. Commands are also registered in the constructor.
+ */
 public class CommandParser {
 
-    private CommandDispatcher<MessageSender> dispatcher;
+    /**
+     * The dispatcher that is used for handling all commands
+     */
+    private final CommandDispatcher<MessageSender> dispatcher;
 
+    /**
+     * Creates a new command parser and registers all commands.
+     */
     public CommandParser() {
         dispatcher = new CommandDispatcher<>();
-        /*dispatcher.register(literal("test").executes(ctx -> {
-            ctx.getSource().getMessage().getChannel().sendMessage("Test!").queue();
-            return 0;
-        }));*/
         dispatcher.register(literal("bye")
                 .requires(sender -> sender.getAuthor().getId().equals(DiscordBot.CONFIG.getBotMaster()))
                 .executes(ctx -> {
@@ -31,26 +36,40 @@ public class CommandParser {
                     return 0;
                 })
         );
-        /*dispatcher.register(literal("err")
-                .requires(sender -> sender.getAuthor().getId().equals(DiscordBot.CONFIG.getBotMaster()))
-                .executes(ctx -> {
-                    throw new CommandInvokationException(new RuntimeException("This is a test error message lol"));
-                })
-        );*/
         new SearchCommand().register(dispatcher);
         new HelpCommand().register(dispatcher);
         new MappingsCommand().register(dispatcher);
         new InfoCommand().register(dispatcher);
     }
 
+    /**
+     * Helper method to fix issues relating to generic types
+     *
+     * @param name name of the literal
+     * @return a new {@link LiteralArgumentBuilder<MessageSender>}
+     */
     public static LiteralArgumentBuilder<MessageSender> literal(String name) {
         return LiteralArgumentBuilder.literal(name);
     }
 
+    /**
+     * Helper method again.
+     *
+     * @param name Name of the argument
+     * @param type Type of argument (eg {@link com.mojang.brigadier.arguments.StringArgumentType})
+     * @param <T> The argument's return type
+     * @return The new {@link RequiredArgumentBuilder}
+     */
     public static <T> RequiredArgumentBuilder<MessageSender, T> argument(String name, ArgumentType<T> type) {
         return RequiredArgumentBuilder.argument(name, type);
     }
 
+    /**
+     * Handles an incoming command
+     *
+     * @param msg THe message that triggered the command
+     * @throws CommandSyntaxException If the command is invalid.
+     */
     public void handle(Message msg) throws CommandSyntaxException {
         dispatcher.execute(msg.getContentRaw().substring(1), new MessageSender(msg, msg.getAuthor()));
     }

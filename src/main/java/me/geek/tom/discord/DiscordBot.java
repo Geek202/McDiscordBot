@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.geek.tom.discord.command.CommandParser;
 import me.geek.tom.discord.config.Config;
 import me.geek.tom.discord.error.ErrorHandler;
+import me.geek.tom.discord.startup.ForgeJarSetup;
 import me.geek.tom.discord.startup.MappingsDownloader;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
@@ -62,6 +63,7 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         MAPPINGS = MappingsDownloader.setupMcp();
+        //ForgeJarSetup.setupForge();
         ACTIVITIES = new ArrayList<>();
         ACTIVITIES.add(()-> Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
         ACTIVITIES.add(()-> Activity.playing("with "+CONFIG.getForgeVersion()));
@@ -120,7 +122,7 @@ public class DiscordBot extends ListenerAdapter {
             try {
                 parser.handle(event.getMessage());
             } catch (CommandSyntaxException e) {
-                event.getChannel().sendMessage(ErrorHandler.createCommandSyntaxEmbed(e, event.getAuthor())).queue();
+                event.getChannel().sendMessage(ErrorHandler.createCommandSyntaxEmbed(e, event.getAuthor(), event.getMessage().getContentDisplay())).queue();
             } catch (Exception e) {
                 event.getChannel().sendMessage(ErrorHandler.createErrorEmbed(e, event.getAuthor(), event.getMessage().getContentDisplay())).queue();
             }

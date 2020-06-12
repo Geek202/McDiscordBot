@@ -12,8 +12,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+/**
+ * Generates error embeds.
+ */
 public class ErrorHandler {
 
+    /**
+     * Creates an embed for any {@link Exception} type.
+     *
+     * @param e The {@link Exception}
+     * @param author The {@link User} who invoked the command.
+     * @param command The command that the user typed to cause the error
+     * @return A {@link MessageEmbed} displaying the error message
+     */
     public static MessageEmbed createErrorEmbed(Exception e, User author, String command) {
         EmbedBuilder builder = new EmbedBuilder();
 
@@ -36,12 +47,23 @@ public class ErrorHandler {
         return builder.build();
     }
 
-    public static MessageEmbed createCommandSyntaxEmbed(CommandSyntaxException e, User author) {
+    /**
+     * Creates an embed for a {@link CommandSyntaxException}.
+     *
+     * @param e The {@link CommandSyntaxException}
+     * @param author The {@link User} who invoked the command.
+     * @param command The command that the user typed to cause the error
+     * @return A {@link MessageEmbed} displaying the error message
+     */
+    public static MessageEmbed createCommandSyntaxEmbed(CommandSyntaxException e, User author, String command) {
         EmbedBuilder builder = new EmbedBuilder();
 
         builder .setTitle("Command Error!")
 
                 .setColor(Color.RED)
+
+                .addField("User", "```"+DiscordBot.user(author)+"```", true)
+                .addField("Command", "```"+command+"```", true)
 
                 .addField("Message:", "```"+e.getRawMessage().getString()+"```", false)
                 .addField("Where:", "```"+e.getContext()+"```", false);

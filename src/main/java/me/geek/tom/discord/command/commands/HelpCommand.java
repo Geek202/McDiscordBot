@@ -2,6 +2,7 @@ package me.geek.tom.discord.command.commands;
 
 import com.jagrosh.jdautilities.menu.Paginator;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import me.geek.tom.discord.DiscordBot;
 import me.geek.tom.discord.command.MessageSender;
 import net.dv8tion.jda.api.entities.User;
@@ -13,11 +14,14 @@ import java.util.concurrent.TimeUnit;
 
 import static me.geek.tom.discord.command.CommandParser.literal;
 
+/**
+ * Adds the command {@code |help} to list commands, and also redirects {@code |commands} to {@code |help}
+ */
 public class HelpCommand implements ICommand
 {
     @Override
     public void register(CommandDispatcher<MessageSender> dispatcher) {
-        dispatcher.register(literal("help")
+        LiteralCommandNode<MessageSender> _help = dispatcher.register(literal("help")
                 .executes(ctx -> {
                     User user = ctx.getSource().getAuthor();
                     String[] help = dispatcher.getAllUsage(dispatcher.getRoot(), ctx.getSource(), true);
@@ -40,7 +44,7 @@ public class HelpCommand implements ICommand
                                 } });
                     builder.clearItems();
                     Arrays.stream(help)
-                        .map(s -> "|"+s)
+                        .map(s -> DiscordBot.CONFIG.getCommandPrefix()+s)
                         .map(s -> "`"+s+"`")
                         .forEach(builder::addItems);
                     builder.build().paginate(ctx.getSource().getMessage().getChannel(), 1);
@@ -48,5 +52,6 @@ public class HelpCommand implements ICommand
                     return 0;
                 })
         );
+        dispatcher.register(literal("commands").redirect(_help));
     }
 }

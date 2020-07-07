@@ -323,7 +323,7 @@ public class MappingsDownloader {
         }
 
         public static FieldMapping fromString(String line) {
-            StringReader reader = new StringReader(line.replaceFirst("METHOD ", ""));
+            StringReader reader = new StringReader(line.replaceFirst("FIELD ", ""));
 
             int start = reader.getCursor();
             while (reader.canRead() && !(reader.peek() == ','))

@@ -302,7 +302,7 @@ public class MappingsDownloader {
         }
 
         public String toNiceString() {
-            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc.trim()+"`\n";
             return "Class: `"+className+"`\nMethod: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }
@@ -372,7 +372,7 @@ public class MappingsDownloader {
         }
 
         public String toNiceString() {
-            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc.trim()+"`\n";
             return "Class: `"+className+"`\nField: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }

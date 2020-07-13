@@ -49,7 +49,7 @@ public class MappingsCommand implements ICommand {
                                         .setColumns(1)                            // Only one column pls
                                         .setItemsPerPage(10)                      // 10 items means less chance of overflow. :D
                                         .waitOnSinglePage(false)                  // Should it immediatly timeout if there is one page
-                                        .useNumberedItems(false)                  // No item numbers pls
+                                        .useNumberedItems(true)                   // Item numbers pls
                                         .showPageNumbers(true)                    // What page are you on?
                                         .setTimeout(60, TimeUnit.SECONDS)  // Don't keep the pager alive for too long.
                                         .setColor(Color.YELLOW)                   // Yellow!
@@ -83,7 +83,7 @@ public class MappingsCommand implements ICommand {
                                         .setColumns(1)                            // Only one column pls
                                         .setItemsPerPage(10)                      // 10 items means less chance of overflow. :D
                                         .waitOnSinglePage(false)                  // Should it immediatly timeout if there is one page
-                                        .useNumberedItems(false)                  // No item numbers pls
+                                        .useNumberedItems(true)                   // Item numbers pls
                                         .showPageNumbers(true)                    // What page are you on?
                                         .setTimeout(60, TimeUnit.SECONDS)  // Don't keep the pager alive for too long.
                                         .setColor(Color.YELLOW)                   // Yellow!
@@ -117,7 +117,7 @@ public class MappingsCommand implements ICommand {
                                         .setColumns(1)                            // Only one column pls
                                         .setItemsPerPage(10)                      // 10 items means less chance of overflow. :D
                                         .waitOnSinglePage(false)                  // Should it immediatly timeout if there is one page
-                                        .useNumberedItems(false)                  // No item numbers pls
+                                        .useNumberedItems(true)                   // Item numbers pls
                                         .showPageNumbers(true)                    // What page are you on?
                                         .setTimeout(60, TimeUnit.SECONDS)  // Don't keep the pager alive for too long.
                                         .setColor(Color.YELLOW)                   // Yellow!

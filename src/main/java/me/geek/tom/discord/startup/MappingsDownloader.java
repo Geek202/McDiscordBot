@@ -303,7 +303,7 @@ public class MappingsDownloader {
         }
 
         public String toNiceString() {
-            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc.trim()+"`\n";
             return "Class: `"+className+"`\nMethod: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }
@@ -324,7 +324,7 @@ public class MappingsDownloader {
         }
 
         public static FieldMapping fromString(String line) {
-            StringReader reader = new StringReader(line.replaceFirst("METHOD ", ""));
+            StringReader reader = new StringReader(line.replaceFirst("FIELD ", ""));
 
             int start = reader.getCursor();
             while (reader.canRead() && !(reader.peek() == ','))
@@ -373,7 +373,7 @@ public class MappingsDownloader {
         }
 
         public String toNiceString() {
-            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc+"`\n";
+            String descStr = desc.equals("") ? "\n" : "\nDescription: `"+desc.trim()+"`\n";
             return "Class: `"+className+"`\nField: `"+notch+"` -> `"+srg+"` -> `"+mcp+"`"+descStr+"\n"+generateATLine();
         }
     }

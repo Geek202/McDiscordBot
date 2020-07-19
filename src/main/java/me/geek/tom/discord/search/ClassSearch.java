@@ -16,7 +16,7 @@ import java.util.jar.JarFile;
 public class ClassSearch {
 
     public static List<String> doSearch(String term) throws IOException {
-        JarFile jar = new JarFile(new File(DiscordBot.CONFIG.getForgeVersion()+".jar"));
+        JarFile jar = new JarFile(DiscordBot.FORGE_JAR);
         List<String> ret = new ArrayList<>();
 
         Enumeration<JarEntry> entries = jar.entries();

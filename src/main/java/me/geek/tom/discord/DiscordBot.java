@@ -41,6 +41,7 @@ public class DiscordBot extends ListenerAdapter {
     private final CommandParser parser = new CommandParser();
     public static final EventWaiter waiter = new EventWaiter();
     public static MappingsDownloader.MappingsData MAPPINGS;
+    public static File FORGE_JAR;
 
     private static JDA jda;
 
@@ -63,8 +64,9 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         MAPPINGS = MappingsDownloader.setupMcp();
-        if (System.getProperty("noForgeSetup") == null)
-            ForgeJarSetup.setupForge(CONFIG.getForgeMappings(), "31.2.0", CONFIG.getForgeMcVersion());
+
+        FORGE_JAR = ForgeJarSetup.setupForge(CONFIG.getForgeMappings(), CONFIG.getForgeVersion(), CONFIG.getForgeMcVersion());
+
         ACTIVITIES = new ArrayList<>();
         ACTIVITIES.add(()-> Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
         ACTIVITIES.add(()-> Activity.playing("with "+CONFIG.getForgeVersion()));

@@ -25,7 +25,7 @@ public class ClassFieldDump {
         String filename = clazz.replace(".", "/");
         if (!filename.endsWith(".class"))
             filename = filename + ".class";
-        JarFile jar = new JarFile(new File(DiscordBot.CONFIG.getForgeVersion()+".jar"));
+        JarFile jar = new JarFile(DiscordBot.FORGE_JAR);
         JarEntry entry = jar.getJarEntry(filename);
         if (entry == null)
             throw new SimpleCommandExceptionType(() -> "Failed to locate class: " + clazz).create();

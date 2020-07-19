@@ -44,7 +44,7 @@ public class Config {
         config.setComment("forge", "Settings for the Forge/Mcp/Minecraft to use");
         config.setComment("forge.version", "The version of Forge to use.");
         config.setComment("forge.mappings", "The mappings version that will be downloaded.");
-        config.setComment("forge.mcversion", "THe version of Minecraft to use.");
+        config.setComment("forge.mcversion", "The version of Minecraft to use.");
 
         config.save();
 

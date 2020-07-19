@@ -10,6 +10,7 @@ repositories {
     mavenCentral()
     maven { url "https://libraries.minecraft.net" }
     jcenter()
+    maven { url 'https://repo.gradle.org/gradle/libs-releases' }
     //maven { url 'https://jitpack.io' }
     //maven { url 'https://files.minecraftforge.net/maven' }
 }
@@ -23,9 +24,8 @@ dependencies {
     // Command parsing
     implementation 'com.mojang:brigadier:1.0.17'
 
-    // Something I was planning on using, but nolonger need.
-    //implementation 'net.minecraftforge:forgeflower:1.5.380.44'
-    //implementation 'com.github.Geek202:ReFind:master-SNAPSHOT'
+    // Building a forge jar
+    implementation "org.gradle:gradle-tooling-api:4.10.3"
 
     // Config file
     implementation 'com.electronwill.night-config:core:3.6.3'

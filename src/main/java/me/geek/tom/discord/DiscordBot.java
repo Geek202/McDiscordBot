@@ -63,7 +63,8 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         MAPPINGS = MappingsDownloader.setupMcp();
-        //ForgeJarSetup.setupForge();
+        if (System.getProperty("noForgeSetup") == null)
+            ForgeJarSetup.setupForge(CONFIG.getForgeMappings(), "31.2.0", CONFIG.getForgeMcVersion());
         ACTIVITIES = new ArrayList<>();
         ACTIVITIES.add(()-> Activity.listening("to "+CONFIG.getCommandPrefix()+"help..."));
         ACTIVITIES.add(()-> Activity.playing("with "+CONFIG.getForgeVersion()));

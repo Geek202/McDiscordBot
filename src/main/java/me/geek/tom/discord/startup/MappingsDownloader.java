@@ -3,6 +3,7 @@ package me.geek.tom.discord.startup;
 import com.google.gson.Gson;
 import com.mojang.brigadier.StringReader;
 import me.geek.tom.discord.DiscordBot;
+import me.geek.tom.discord.Logging;
 import me.geek.tom.discord.search.MappingsSearch;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,25 +32,25 @@ public class MappingsDownloader {
     public static int mappingsCount = 0;
 
     public static MappingsData setupMcp() throws IOException {
-        LOGGER.info("Setting up MCP mapping data...");
-        LOGGER.info("Downloading MCPConfig for Minecraft version " + DiscordBot.CONFIG.getForgeMcVersion());
+        LOGGER.info(Logging.SETUP, "Setting up MCP mapping data...");
+        LOGGER.info(Logging.SETUP, "Downloading MCPConfig for Minecraft version " + DiscordBot.CONFIG.getForgeMcVersion());
         File mcpConfig = downloadConfig();
         assert mcpConfig != null; // This should never fail, but we have it here just in case.
-        LOGGER.info("MCPConfig downloaded to "+mcpConfig);
-        LOGGER.info("Downloading MCP CSV names version "+DiscordBot.CONFIG.getForgeMappings()+"...");
+        LOGGER.info(Logging.SETUP, "MCPConfig downloaded to "+mcpConfig);
+        LOGGER.info(Logging.SETUP, "Downloading MCP CSV names version "+DiscordBot.CONFIG.getForgeMappings()+"...");
         File mappingsZip = downloadMappings();
         assert mappingsZip != null; // again, this should also never fail.
-        LOGGER.info("Downloaded MCP CSV zip to "+mappingsZip);
-        LOGGER.info("Extracting NOTCH->SRG tsrg...");
+        LOGGER.info(Logging.SETUP, "Downloaded MCP CSV zip to "+mappingsZip);
+        LOGGER.info(Logging.SETUP, "Extracting NOTCH->SRG tsrg...");
         File notchSrg = extractNotchSrgTsrg(mcpConfig);
-        LOGGER.info("Extracted NOTCH->SRG mappings to "+notchSrg);
-        LOGGER.info("Extracting MCP names...");
+        LOGGER.info(Logging.SETUP, "Extracted NOTCH->SRG mappings to "+notchSrg);
+        LOGGER.info(Logging.SETUP, "Extracting MCP names...");
         File mcpDir = extractMcp(mappingsZip);
-        LOGGER.info("Extracted MCP names to "+mcpDir);
-        LOGGER.info("Merging mappings into a joined file");
+        LOGGER.info(Logging.SETUP, "Extracted MCP names to "+mcpDir);
+        LOGGER.info(Logging.SETUP, "Merging mappings into a joined file");
         MappingsData data = mergeMappings(notchSrg, mcpDir);
-        LOGGER.info("Mappings have been sucessfully merged!");
-        LOGGER.info("Mappings data collected successfully, setup is complete!");
+        LOGGER.info(Logging.SETUP, "Mappings have been sucessfully merged!");
+        LOGGER.info(Logging.SETUP, "Mappings data collected successfully, setup is complete!");
         return data;
     }
 
